@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wiki Center with Rich-Text Notes</title>
+
+  <!-- Quill -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+
+  <!-- Fuse.js for search -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <!-- Mammoth for .docx -->
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+  <!-- TailwindCSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-gray-.10 min-h-.10 flex flex-col">
+</style>
+  <script type="module">
+    // Firebase configuration and initialization
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyC5GVDAnBXCTtBOQj_4PrXHnj4tFTKliDM",
+  authDomain: "kpwiki360-72f32.firebaseapp.com",
+  projectId: "kpwiki360-72f32",
+  storageBucket: "kpwiki360-72f32.firebasestorage.app",
+  messagingSenderId: "509760248633",
+  appId: "1:509760248633:web:17e98fdab5b5bdfa0066e8",
+  measurementId: "G-B4K6JFTYVK"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    const quill = new Quill('#editor-container', { theme: 'snow' });
+
+    const notesRef = collection(db, 'notes');
+
+    async function saveNote(content) {
+      await addDoc(notesRef, { content });
+    }
+
+    async function deleteNote(id) {
+      await deleteDoc(doc(db, 'notes', id));
+    }
+  <!-- Header -->
+  <header class="flex items-center justify-between bg-gray-700 text-white px-4 py-.15 shadow">
+    <div class="flex items-center space-x-.10">
+      <h1 class="text-2xl font-Lora">
+        <a href="file:///C:/Users/hyaci/Downloads/KP360%20WIKI/KARPARTS360%20WIKI.html" class="hover:underline">KARPARTS360</a>
+      </h1>
+    </div>
+    <nav class="flex items-center space-x-6 relative">
+           <!-- Dropdown Trigger -->
+      <div class="relative">
+        <button onclick="toggleDropdown()" class="focus:outline-none">
+          Tools ▼
+        </button>
+        <div id="dropdownMenu" class="absolute right-0 mt-2 w-40 bg-white text-black border border-gray-300 rounded shadow-lg hidden z-50">
+          <a href="https://netorgft5128391-my.sharepoint.com/:x:/g/personal/ariane_karparts360_com/EUx919M89c9Kt4k8d7W2hS4B3pqEJvbNr3h4W4dkDtwYQg?e=4OvWYh" class="block px-4 py-2 hover:bg-gray-100">NPM CALC</a>
+          <a href="https://netorgft5128391.sharepoint.com/:x:/r/sites/CSRDaily/_layouts/15/Doc.aspx?sourcedoc=%7B1A2619BD-AD7F-4E31-88C2-344767028B6A%7D&file=All%20Multi%20Shipments%20Tracker1.xlsx&action=default&mobileredirect=true" class="block px-4 py-2 hover:bg-gray-100">MULTISHIPMENTS</a>
+          <a href="https://netorgft5128391.sharepoint.com/:x:/s/Warehouse/EZkFG92vfEJPmK1V2SgSU-gBasSgj1hbb6I7uScp59Qe_w?e=vrCxcB" class="block px-4 py-2 hover:bg-gray-100">ALL SUPPLIERS PO</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <!-- ... (rest of your existing sidebar and main content) ... -->
+  </div>
+  <!-- Scripts -->
+  <script>
+    function toggleDropdown() {
+      const menu = document.getElementById("dropdownMenu");
+      menu.classList.toggle("hidden");
+      document.addEventListener("click", closeDropdownOnClickOutside);
+    }
+
+    function closeDropdownOnClickOutside(e) {
+      const menu = document.getElementById("dropdownMenu");
+      const button = e.target.closest('button[onclick="toggleDropdown()"]');
+      if (!menu.contains(e.target) && !button) {
+        menu.classList.add("hidden");
+        document.removeEventListener("click", closeDropdownOnClickOutside);
+      }
+    }
+
+    // Initialize other scripts (Quill, notes, files, etc.)
+    // ... your existing JS logic here ...
+  </script>
+</body>
+</html>
+
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <aside class="w-72 bg-white border-r border-gray-300 p-4 flex flex-col">
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold">PO Processes</h2>
+          <div class="flex space-x-2">
+            <button title="Create" onclick="openModal()"
+                    class="p-1 text-blue-600 hover:bg-blue-100 rounded">+</button>
+            <button title="Upload" onclick="fileInput.click()"
+                    class="p-1 text-green-600 hover:bg-green-100 rounded">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor"
+                   viewBox="0 0 20 20">
+                <path d="M3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                <path d="M7 10V3a1 1 0 112 0v7h2.586a1 1 0 01.707 1.707l-3.293 3.293a1 1 0 01-1.414 0L4.293 11.707A1 1 0 015 10h2z"/>
+              </svg>
+            </button>
+            <input type="file" id="fileInput" accept=".pdf,.docx" multiple style="display:none"
+                   onchange="handleFileUpload(event)">
+          </div>
+        </div>
+
+        <input id="searchInput" type="text" placeholder="Search..."
+  class="..." oninput="performSearch()" />
+
+        <div id="notesSection" class="mb-6">
+          <h3 class="text-lg font-semibold mb-.20">Notes</h3>
+          <div id="notesList" class="space-y-.20"></div>
+        </div>
+
+        <div id="filesSection">
+          <h3 class="text-lg font-semibold mb-2">Uploaded Files</h3>
+          <div id="filesList" class="space-y-2"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="flex-1 p-6 overflow-auto">
+      <div class="section mb-6 bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+        <h2 class="text-2xl font-bold mb-3">Welcome to the Wiki360</h2>
+        <p>This is our Purchase Order central hub for all documentation, guides, and resources for our team.</p>
+      </div>
+
+      <div class="section mb-6 bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+        <h2 class="text-2xl font-bold mb-3">NetSuite Guides</h2>
+        <p>A step-by-step process.</p>
+        <ul class="list-disc list-inside mt-2 space-y-1">
+          <li>PO Importing</li>
+          <li>PO Receiving</li>
+          <li>PO Invoicing</li>
+        </ul>
+      </div>
+
+      <div class="section mb-6 bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+        <h2 class="text-2xl font-bold mb-3">Documentation</h2>
+        <p>Email Templates, SOP, and notes.</p>
+      </div>
+
+      <div class="section bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+        <h2 class="text-2xl font-bold mb-3">Files</h2>
+        <p>Full details on endpoints, authentication, rate limits, and request/response formats.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Note Modal -->
+  <div id="noteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white p-6 rounded shadow w-96">
+      <h3 class="text-lg font-bold mb-4">New Note</h3>
+      <input id="noteTitle" type="text" placeholder="Title" class="w-full border p-2 mb-2 rounded"/>
+
+      <!-- Quill Editor Container -->
+      <div id="noteEditor" class="h-40 mb-2"></div>
+
+      <div class="flex justify-end space-x-2">
+        <button onclick="saveNote()"
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
+        <button onclick="closeModal()"
+                class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-0 text-black text-center p-.20 mt-4">
+    <p>&copy; By: Hyacinth and Jovilyn.</p>
+  </footer>
+
+  <script>
+    // --- Quill Setup ---
+    const quill = new Quill('#noteEditor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ font: [] }, { size: ['small', false, 'large', 'huge'] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ color: [] }, { background: [] }],
+          [{ align: [] }],
+          ['blockquote', 'code-block'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ indent: '-1' }, { indent: '+1' }],
+          ['clean']
+        ]
+      }
+    });
+
+    // --- Notes Logic ---
+    // --- Notes Logic ---
+let notes = JSON.parse(localStorage.getItem("notes")) || [];
+let editIndex = null;
+
+function getSearchableNotes() {
+  return notes.map(n => ({
+    ...n,
+    content: n.content.replace(/<[^>]+>/g, "") // Strip HTML for plain-text search
+  }));
+}
+
+let noteFuse = new Fuse(getSearchableNotes(), {
+  keys: ["title", "plainTextContent"],
+  includeScore: true,
+  threshold: 0.3
+});
+
+function renderNotes(filtered = null) {
+  const list = document.getElementById("notesList");
+  const arr = filtered || notes;
+  if (!arr.length) return list.innerHTML = "<p class='text-gray-500'>No notes.</p>";
+  list.innerHTML = arr.map(n => {
+    const i = notes.findIndex(x => x === n);
+    return `
+      <div class="border p-2 rounded bg-gray-50 cursor-pointer hover:bg-gray-100" onclick="displayNote(${i})">
+        <div class="flex justify-between items-center">
+          <span class="font-medium">${n.title}</span>
+          <span class="text-xs text-gray-400">${new Date(n.timestamp).toLocaleString()}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function displayNote(i) {
+  const n = notes[i];
+  document.getElementById("mainContent").innerHTML = `
+    <section class="bg-white p-6 rounded shadow">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-xl font-bold">${n.title}</h2>
+        <div class="flex space-x-2">
+          <button onclick="editNote(${i})" class="text-blue-500 hover:text-blue-700">Edit</button>
+          <button onclick="deleteNote(${i})" class="text-red-500 hover:text-red-700">Delete</button>
+        </div>
+      </div>
+      <div class="prose mb-2">${n.content}</div>
+      <p class="text-sm text-gray-400">Created: ${new Date(n.timestamp).toLocaleString()}</p>
+    </section>`;
+}
+
+function openModal() {
+  document.getElementById("noteModal").classList.remove("hidden");
+  noteTitle.value = "";
+  quill.setContents([]);
+}
+
+function closeModal() {
+  document.getElementById("noteModal").classList.add("hidden");
+  editIndex = null;
+  quill.setContents([]);
+}
+
+function saveNote() {
+  const title = noteTitle.value.trim();
+  const content = quill.root.innerHTML.trim();
+  if (!title || content === '<p><br></p>') return;
+
+  if (editIndex !== null) {
+    notes[editIndex] = { ...notes[editIndex], title, content, timestamp: notes[editIndex].timestamp };
+  } else {
+    notes.push({ title, content, timestamp: new Date().toISOString() });
+  }
+
+  localStorage.setItem("notes", JSON.stringify(notes));
+  noteFuse.setCollection(getSearchableNotes());
+  renderNotes();
+  if (editIndex !== null) displayNote(editIndex);
+  closeModal();
+}
+
+function editNote(i) {
+  editIndex = i;
+  noteTitle.value = notes[i].title;
+  quill.root.innerHTML = notes[i].content;
+  document.getElementById("noteModal").classList.remove("hidden");
+}
+
+function deleteNote(i) {
+  if (!confirm("Delete this note?")) return;
+  notes.splice(i, 1);
+  localStorage.setItem("notes", JSON.stringify(notes));
+  noteFuse.setCollection(getSearchableNotes());
+  renderNotes();
+  mainContent.innerHTML = `<section class="bg-white p-6 rounded shadow"><p class="text-gray-500">Note deleted.</p></section>`;
+}
+
+function performSearch() {
+  const q = searchInput.value.trim();
+  if (!q) {
+    renderNotes();
+    restoreDefaultMainContent();
+    return;
+  }
+  const results = noteFuse.search(q).map(r => r.item);
+  renderNotes(results);
+  renderNotesInMain(results);
+}
+
+// Helper: render full matched notes in main content area
+function renderNotesInMain(notesArr) {
+  if (!notesArr.length) {
+    mainContent.innerHTML = `<section class="bg-white p-6 rounded shadow"><p class="text-gray-500">No matching notes found.</p></section>`;
+    return;
+  }
+  mainContent.innerHTML = notesArr.map(n => `
+    <section class="bg-white p-6 mb-4 rounded shadow">
+      <h2 class="text-xl font-bold mb-2">${n.title}</h2>
+      <div class="prose mb-2">${n.content}</div>
+      <p class="text-sm text-gray-400">Created: ${new Date(n.timestamp).toLocaleString()}</p>
+    </section>
+  `).join('');
+}
+
+function restoreDefaultMainContent() {
+  mainContent.innerHTML = `
+    <div class="section mb-6 bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+      <h2 class="text-2xl font-bold mb-3">Welcome to the Wiki360</h2>
+      <p>This is our Purchase Order central hub for all documentation, guides, and resources for our team.</p>
+    </div>
+
+    <div class="section mb-6 bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+      <h2 class="text-2xl font-bold mb-3">Updates</h2>
+      <p>Here you'll find setup instructions, installation guides, and quick start examples.</p>
+      <ul class="list-disc list-inside mt-2 space-y-1">
+        <li>Install the software</li>
+        <li>Configure your environment</li>
+        <li>Write your first page</li>
+      </ul>
+    </div>
+
+    <div class="section mb-6 bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+      <h2 class="text-2xl font-bold mb-3">Documentation</h2>
+      <p>Deep technical details, code snippets, architecture diagrams, and more.</p>
+    </div>
+
+    <div class="section bg-white p-6 rounded-lg border border-gray-300 shadow-sm">
+      <h2 class="text-2xl font-bold mb-3">API Reference</h2>
+      <p>Full details on endpoints, authentication, rate limits, and request/response formats.</p>
+    </div>
+  `;
+}
+    // --- File Logic (PDF & DOCX) ---
+    let files = JSON.parse(localStorage.getItem("files")) || [];
+
+    function renderFiles() {
+      const list = document.getElementById("filesList");
+      if (!files.length) return list.innerHTML = "<p class='text-gray-500'>No files.</p>";
+      list.innerHTML = files.map((f,i) => `
+        <div class="border p-2 rounded bg-gray-50 flex justify-between items-center">
+          <span class="truncate max-w-xs cursor-pointer" onclick="displayFile(${i})" title="${f.name}">${f.name}</span>
+          <div class="flex space-x-1">
+            <button onclick="downloadFile(${i})" title="Download">⬇️</button>
+            <button onclick="deleteFile(${i})" title="Delete">🗑️</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function handleFileUpload(e) {
+      Array.from(e.target.files).forEach(file => {
+        const ok = ["application/pdf","application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+        if (!ok.includes(file.type)) return alert("Only PDF/DOCX allowed");
+        const r = new FileReader();
+        r.onload = () => {
+          files.push({ name:file.name, type:file.type, data:r.result, timestamp:new Date().toISOString() });
+          localStorage.setItem("files", JSON.stringify(files));
+          renderFiles();
+        };
+        r.readAsDataURL(file);
+      });
+      e.target.value = "";
+    }
+
+    function displayFile(i) {
+  const f = files[i];
+
+  if (f.type === "application/pdf") {
+    // Convert base64 to Blob
+    const byteCharacters = atob(f.data.split(',')[1]);
+    const byteNumbers = Array.from(byteCharacters).map(char => char.charCodeAt(0));
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const blobUrl = URL.createObjectURL(blob);
+
+if (f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+  fetch(f.data)
+    .then(res => res.arrayBuffer())
+    .then(arrayBuffer => {
+      return mammoth.convertToHtml({ arrayBuffer });
+    })
+    .then(result => {
+      mainContent.innerHTML = `
+        <section class="bg-white p-6 rounded shadow">
+          <h2 class="text-xl font-bold mb-2">${f.name}</h2>
+          <div class="prose">${result.value}</div>
+        </section>`;
+    })
+    .catch(err => {
+      mainContent.innerHTML = `<p class="text-red-500">Failed to load DOCX: ${err.message}</p>`;
+    });
+}
+
+    // Display with zoom and fullscreen
+    mainContent.innerHTML = `
+      <section class="bg-white rounded shadow w-full h-full flex flex-col">
+        <div class="flex justify-between items-center px-4 py-2 border-b">
+          <h2 class="text-xl font-bold truncate">${f.name}</h2>
+          <div class="space-x-2">
+            <button onclick="zoomPDF(1.25)" class="bg-blue-100 px-2 py-1 rounded hover:bg-blue-200">Zoom In</button>
+            <button onclick="zoomPDF(0.8)" class="bg-blue-100 px-2 py-1 rounded hover:bg-blue-200">Zoom Out</button>
+            <button onclick="toggleFullscreen()" class="bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">Fullscreen</button>
+          </div>
+        </div>
+        <div id="pdfViewerContainer" class="flex-1 overflow-hidden">
+          <embed id="pdfViewer" src="${blobUrl}" type="application/pdf" class="w-full h-full"/>
+        </div>
+      </section>
+    `;
+
+    // Revoke previous object URLs if needed (optional cleanup)
+    if (window.currentPDFBlobUrl) URL.revokeObjectURL(window.currentPDFBlobUrl);
+    window.currentPDFBlobUrl = blobUrl;
+    window.currentPDFZoom = 1;
+  } else {
+    // DOCX handling
+    mainContent.innerHTML = `
+      <section class="bg-white p-4 rounded shadow overflow-auto">
+        <h2 class="text-xl font-bold mb-2">${f.name}</h2>
+        <div id="docxContent" class="prose max-w-none"></div>
+      </section>`;
+    const ab = (() => {
+      const b = atob(f.data.split(",")[1]), u = new Uint8Array(b.length);
+      for (let j = 0; j < b.length; j++) u[j] = b.charCodeAt(j);
+      return u.buffer;
+    })();
+    mammoth.convertToHtml({ arrayBuffer: ab })
+      .then(r => docxContent.innerHTML = r.value)
+      .catch(() => docxContent.innerHTML = "<p class='text-red-500'>Failed to load.</p>");
+  }
+}
+
+function zoomPDF(factor) {
+  const viewer = document.getElementById("pdfViewer");
+  if (!viewer) return;
+  window.currentPDFZoom = Math.max(0.5, Math.min(window.currentPDFZoom * factor, 3)); // Clamp zoom
+  viewer.style.transform = `scale(${window.currentPDFZoom})`;
+  viewer.style.transformOrigin = "top left";
+  viewer.style.width = `${window.currentPDFZoom * 100}%`;
+  viewer.style.height = `${window.currentPDFZoom * 100}%`;
+}
+
+function toggleFullscreen() {
+  const container = document.getElementById("pdfViewerContainer");
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else if (container.requestFullscreen) {
+    container.requestFullscreen();
+  }
+}
+
+
+    function downloadFile(i) {
+  const f = files[i];
+  const a = document.createElement("a");
+  a.href = f.data;
+  a.download = f.name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+    function deleteFile(i) {
+      if (!confirm("Delete this file?")) return;
+      files.splice(i,1);
+      localStorage.setItem("files", JSON.stringify(files));
+      renderFiles();
+      mainContent.innerHTML = `<section class="bg-white p-6 rounded shadow"><p class="text-gray-500">File deleted.</p></section>`;
+    }
+
+    // --- Initialize ---
+    renderNotes();
+    renderFiles();
+  </script>
+</body>
+</html>
